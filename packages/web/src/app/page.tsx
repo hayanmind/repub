@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -19,6 +19,11 @@ import {
   HelpCircle,
   Accessibility,
   Loader2,
+  Puzzle,
+  Terminal,
+  Download,
+  ExternalLink,
+  Github,
 } from 'lucide-react';
 import { getJobs, uploadFile, startConversion, type JobStatus } from '@/lib/api';
 import { DEMO_JOBS, DEMO_STATS } from '@/lib/demo-data';
@@ -173,6 +178,118 @@ export default function Dashboard() {
             <p className="text-xs text-gray-500 mt-0.5">{label}</p>
           </div>
         ))}
+      </div>
+
+      {/* Sigil Plugin Showcase */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2 mb-1">
+            <Puzzle className="w-5 h-5 text-indigo-600" />
+            <h2 className="font-bold text-sm text-gray-900">Sigil 플러그인</h2>
+            <span className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-medium">NEW</span>
+          </div>
+          <p className="text-xs text-gray-500">오픈소스 ePub 에디터 Sigil에서 직접 AI 리마스터링을 실행하세요</p>
+        </div>
+        <div className="p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Plugin Info */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="p-1.5 bg-indigo-100 rounded-md shrink-0">
+                  <Download className="w-3.5 h-3.5 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">설치 방법</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+                    Sigil &rarr; Plugins &rarr; Manage Plugins &rarr; Add Plugin &rarr; ZIP 파일 선택
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="p-1.5 bg-indigo-100 rounded-md shrink-0">
+                  <Play className="w-3.5 h-3.5 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">사용 방법</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+                    ePub 파일 열기 &rarr; Plugins &rarr; Output &rarr; ePubRemaster &rarr; 옵션 선택 &rarr; Convert
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="p-1.5 bg-indigo-100 rounded-md shrink-0">
+                  <Zap className="w-3.5 h-3.5 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">두 가지 모드</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+                    <b>API 모드</b> — Node.js 불필요, 원격 서버 처리<br />
+                    <b>Local 모드</b> — 완전 오프라인, CLI 직접 실행
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* CLI + Comparison */}
+            <div className="space-y-3">
+              <div className="bg-gray-900 rounded-lg p-4 text-[12px] font-mono text-gray-300 leading-relaxed">
+                <div className="flex items-center gap-2 mb-2">
+                  <Terminal className="w-3.5 h-3.5 text-gray-500" />
+                  <span className="text-[10px] text-gray-500 font-sans">CLI 사용 예시</span>
+                </div>
+                <div>
+                  <span className="text-emerald-400">$</span> epub-remaster convert input.epub \<br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;-o output.epub --quiz --summary<br />
+                  <br />
+                  <span className="text-gray-500"># 변환 완료 (30ms)</span><br />
+                  <span className="text-gray-500">#   ePubCheck: PASS</span><br />
+                  <span className="text-gray-500">#   접근성: 100점</span>
+                </div>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-3">
+                <p className="text-[11px] font-semibold text-gray-700 mb-2">vs ePub3-itizer (기존 Sigil 플러그인)</p>
+                <div className="grid grid-cols-3 gap-1 text-[10px]">
+                  <div className="text-gray-500 font-medium">기능</div>
+                  <div className="text-gray-400 text-center">기존</div>
+                  <div className="text-indigo-600 text-center font-semibold">ePubRemaster</div>
+                  {[
+                    ['구조 변환', true, true],
+                    ['AI 퀴즈', false, true],
+                    ['TTS+SMIL', false, true],
+                    ['접근성 태깅', false, true],
+                    ['GUI 설정', false, true],
+                  ].map(([label, old, ours]) => (
+                    <Fragment key={label as string}>
+                      <div className="text-gray-600 py-0.5">{label as string}</div>
+                      <div className="text-center py-0.5">{old ? 'O' : <span className="text-gray-300">-</span>}</div>
+                      <div className="text-center py-0.5 text-indigo-600 font-semibold">O</div>
+                    </Fragment>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="flex gap-2.5 mt-4 pt-4 border-t border-gray-100">
+            <a
+              href="https://github.com/hayanmind/epub-remastering-tool/tree/main/packages/sigil-plugin"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+            >
+              <Github className="w-4 h-4" /> 플러그인 다운로드
+            </a>
+            <a
+              href="https://sigil-ebook.com/sigil/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" /> Sigil 다운로드
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Recent Jobs */}
