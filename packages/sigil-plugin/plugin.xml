@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <name>ePubRemaster</name>
+  <type>output</type>
+  <author>HayanMind</author>
+  <description>AI-powered ePub 2.0 → 3.0 interactive remastering. Adds quizzes, TTS, summaries, and accessibility tags automatically.</description>
+  <engine>python3.4</engine>
+  <version>1.0.0</version>
+  <oslist>osx,unx,win</oslist>
+  <autostart>false</autostart>
+  <autoclose>false</autoclose>
+</plugin>
