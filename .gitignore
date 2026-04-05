@@ -10,5 +10,11 @@ coverage/
 tmp/
 uploads/
 
+# Generated reports
+kpi-report.json
+
 # Source documents (private/confidential)
 source/
+
+# Outsourcing documents (confidential)
+outsourcing/

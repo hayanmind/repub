@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Upload,
@@ -13,15 +14,23 @@ import {
   XCircle,
   BookOpen,
   Play,
+  Zap,
+  Volume2,
+  HelpCircle,
+  Accessibility,
+  Loader2,
 } from 'lucide-react';
-import { getJobs, type JobStatus } from '@/lib/api';
+import { getJobs, uploadFile, startConversion, type JobStatus } from '@/lib/api';
 import { DEMO_JOBS, DEMO_STATS } from '@/lib/demo-data';
 import { useDemoFlow } from '@/lib/demo-flow';
 
 export default function Dashboard() {
+  const router = useRouter();
   const [jobs, setJobs] = useState<JobStatus[]>([]);
   const [loading, setLoading] = useState(true);
-  const { startDemoFlow, skipToPreview, skipToReport, isRunning } = useDemoFlow();
+  const [dragOver, setDragOver] = useState(false);
+  const [converting, setConverting] = useState(false);
+  const { startDemoFlow, isRunning } = useDemoFlow();
 
   useEffect(() => {
     async function load() {
@@ -50,6 +59,27 @@ export default function Dashboard() {
       }
     : DEMO_STATS;
 
+  const handleFileDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const f = e.dataTransfer.files[0];
+    if (!f || !f.name.endsWith('.epub')) return;
+    setConverting(true);
+    try {
+      const uploadResult = await uploadFile(f);
+      const convResult = await startConversion(uploadResult.id, {
+        enableQuiz: true,
+        enableTts: true,
+        enableSummary: true,
+      });
+      router.push(`/convert?job=${convResult.jobId}`);
+    } catch {
+      router.push('/upload');
+    } finally {
+      setConverting(false);
+    }
+  }, [router]);
+
   const statCards = [
     { label: '총 변환 수', value: String(stats.totalConversions), icon: RefreshCw, color: 'text-indigo-600' },
     { label: '성공률', value: `${stats.successRate}%`, icon: CheckCircle, color: 'text-emerald-600' },
@@ -57,26 +87,82 @@ export default function Dashboard() {
     { label: '접근성 점수', value: stats.accessibilityScore, icon: Shield, color: 'text-indigo-600' },
   ];
 
-  const today = new Date();
-  const greeting = `${today.getMonth() + 1}월 ${today.getDate()}일`;
+  const features = [
+    { icon: Zap, title: 'ePub 3.0 자동 변환', desc: 'HTML5/CSS3 시맨틱 마크업으로 구조 자동 변환' },
+    { icon: HelpCircle, title: 'AI 퀴즈 생성', desc: 'LLM 기반 챕터별 퀴즈 자동 생성' },
+    { icon: Volume2, title: 'TTS 음성 변환', desc: 'SMIL 미디어 오버레이 싱크 지원' },
+    { icon: Accessibility, title: '접근성 자동 적용', desc: 'KWCAG 2.1 / EPUB Accessibility 1.1 준수' },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-fadeIn">
-      {/* Greeting */}
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">
-          ePub 리마스터링
-        </h1>
-        <p className="text-sm text-gray-500 mt-0.5">오늘, {greeting}</p>
+      {/* Hero — Quick Upload */}
+      <div
+        onDrop={handleFileDrop}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        className={`relative rounded-xl border-2 border-dashed p-8 text-center transition-all ${
+          dragOver ? 'border-indigo-400 bg-indigo-50/50' : 'border-gray-200 bg-white'
+        }`}
+      >
+        {converting ? (
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+            <p className="text-sm font-medium text-gray-700">변환 중...</p>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col items-center gap-3">
+              <div className="p-3 bg-indigo-50 rounded-xl">
+                <Upload className="w-7 h-7 text-indigo-600" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">
+                  ePub 2.0 → 3.0 인터랙티브 변환
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  ePub 파일을 여기에 드래그하거나,{' '}
+                  <Link href="/upload" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                    업로드 페이지
+                  </Link>
+                  에서 시작하세요
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2.5 justify-center mt-4">
+              <Link
+                href="/upload"
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+              >
+                <Upload className="w-4 h-4" /> 파일 업로드
+              </Link>
+              <button
+                onClick={startDemoFlow}
+                disabled={isRunning}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                <Play className="w-4 h-4" /> 데모 체험
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Features */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {features.map(({ icon: Icon, title, desc }) => (
+          <div key={title} className="bg-white rounded-xl border border-gray-200 p-4">
+            <Icon className="w-5 h-5 text-indigo-600 mb-2" />
+            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+            <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">{desc}</p>
+          </div>
+        ))}
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {statCards.map(({ label, value, icon: Icon, color }) => (
-          <div
-            key={label}
-            className="bg-white rounded-xl border border-gray-200 p-4"
-          >
+          <div key={label} className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
               <Icon className={`w-4 h-4 ${color}`} />
               {!hasRealJobs && (
@@ -89,63 +175,12 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <button
-          onClick={startDemoFlow}
-          disabled={isRunning}
-          className="group bg-indigo-600 text-white rounded-xl p-5 text-left hover:bg-indigo-700 transition-colors disabled:opacity-70"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-sm">데모 시작</h3>
-              <p className="text-indigo-200 text-xs mt-1">
-                원클릭으로 전체 변환 플로우를 시연합니다
-              </p>
-            </div>
-            <Play className="w-5 h-5 opacity-60 group-hover:opacity-100 transition-opacity" />
-          </div>
-        </button>
-        <Link
-          href="/upload"
-          className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 transition-colors"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-sm text-gray-900">새 변환 시작</h3>
-              <p className="text-gray-500 text-xs mt-1">
-                ePub 파일을 업로드하여 변환 시작
-              </p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
-          </div>
-        </Link>
-        <div className="flex gap-3">
-          <button
-            onClick={skipToPreview}
-            className="flex-1 group bg-white rounded-xl border border-gray-200 p-5 text-left hover:border-gray-300 transition-colors"
-          >
-            <BookOpen className="w-4 h-4 text-gray-400 mb-2" />
-            <h3 className="font-semibold text-xs text-gray-900">미리보기</h3>
-            <p className="text-gray-500 text-[11px] mt-0.5">데모 결과 확인</p>
-          </button>
-          <button
-            onClick={skipToReport}
-            className="flex-1 group bg-white rounded-xl border border-gray-200 p-5 text-left hover:border-gray-300 transition-colors"
-          >
-            <Shield className="w-4 h-4 text-gray-400 mb-2" />
-            <h3 className="font-semibold text-xs text-gray-900">KPI 리포트</h3>
-            <p className="text-gray-500 text-[11px] mt-0.5">검증 결과 확인</p>
-          </button>
-        </div>
-      </div>
-
       {/* Recent Jobs */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
           <h2 className="font-semibold text-sm text-gray-900">최근 변환 작업</h2>
-          <Link href="/convert" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
-            전체 보기
+          <Link href="/upload" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+            새 변환 →
           </Link>
         </div>
         {loading ? (

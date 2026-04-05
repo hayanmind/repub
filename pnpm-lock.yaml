@@ -118,6 +118,9 @@ importers:
 
   packages/web:
     dependencies:
+      '@gov-epub/core':
+        specifier: workspace:*
+        version: link:../core
       epubjs:
         specifier: ^0.3.93
         version: 0.3.93

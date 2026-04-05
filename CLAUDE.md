@@ -550,18 +550,19 @@ gov-epub-2026/
 
 > 이 섹션은 실제 개발 과정에서 축적된 실전 지식이다. 새 세션에서 빠르게 맥락을 잡는 데 활용한다.
 
-### 12.1 현재 구현 상태 (2026-02-22 기준)
+### 12.1 현재 구현 상태 (2026-04-05 기준)
 
 | 영역 | 상태 | 비고 |
 |------|------|------|
 | Core 엔진 (파서/변환/접근성/검증) | ✅ 완성 | 60 tests 전체 통과 |
 | AI 인터랙션 (퀴즈/TTS/이미지/튜터) | ✅ 완성 | Mock + Real 모드 |
-| Web UI (7 페이지 + 15 API Routes) | ✅ 완성 | Next.js 16 App Router, 프리미엄 UI/UX (v2) |
+| Web UI (7 페이지 + 15 API Routes) | ✅ 완성 | Next.js 16 App Router, Core 엔진 실제 연동 |
 | API 서버 (Express, 16 엔드포인트) | ✅ 완성 | 로컬 개발용 |
-| 문서 (8건) | ✅ 완성 | README, ARCHITECTURE, API, DEPLOY, FAQ, CONTRIBUTING, SIGIL, FINAL_REPORT |
+| 문서 (9건) | ✅ 완성 | README, ARCHITECTURE, API, DEPLOY, FAQ, CONTRIBUTING, SIGIL, FINAL_REPORT, TEST_CERTIFICATE |
 | GitHub Actions CI/CD | ✅ 완성 | 빌드 + 테스트 + 타입체크 |
 | Docker / Docker Compose | ✅ 완성 | dev/production 멀티스테이지 |
-| Vercel 배포 설정 | ✅ 완성 | 아직 실제 배포는 안 함 |
+| Vercel 배포 설정 | ✅ 완성 | maxDuration, 보안 헤더 설정 완료 |
+| KPI 검증 스크립트 | ✅ 완성 | scripts/validate-kpi.ts, 7종 ePub 변환 검증 |
 | 프로덕션 DB (PostgreSQL) | ❌ 미구현 | 현재 인메모리 (Map) |
 | 작업 큐 (Redis/BullMQ) | ❌ 미구현 | 시간 기반 progress 시뮬레이션 |
 | 클라우드 스토리지 (GCS/S3) | ❌ 미구현 | 로컬 파일시스템 |
@@ -592,6 +593,7 @@ pnpm dev:api              # API 서버 (포트 3001)
 pnpm build                # 전체 빌드 (core → api → web)
 pnpm test                 # 전체 테스트
 pnpm clean                # 빌드 산출물 삭제
+pnpm validate:kpi         # KPI 검증 스크립트 실행
 docker compose up         # Docker 개발 환경 (3000 + 3001)
 
 # 개별 패키지
@@ -616,8 +618,11 @@ packages/core/src/
 ├── interaction/image/index.ts  # AI 이미지 추천/생성
 └── interaction/tutor/index.ts  # AI 튜터 채팅 위젯
 
+scripts/
+└── validate-kpi.ts             # KPI 검증 — 7종 ePub 변환 + 지표 측정
+
 packages/web/src/
-├── app/page.tsx                # 메인 대시보드 (데모 플로우 통합)
+├── app/page.tsx                # 메인 대시보드 (업로드 + 데모 플로우)
 ├── app/upload/page.tsx         # 업로드 페이지
 ├── app/convert/page.tsx        # 변환 진행 페이지 (가변 타이밍 데모)
 ├── app/preview/page.tsx        # Before/After 미리보기 (운수 좋은 날)
@@ -668,9 +673,8 @@ packages/web/src/
 | `004514b` | feat: 프리미엄 UI/UX 오버홀 및 원클릭 데모 플로우 |
 | `dd8415e` | fix: API 패키지 TypeScript 타입 에러 수정 |
 
-### 12.8 남은 작업 (향후 세션)
+### 12.8 남은 작업 (향후)
 
-- Vercel 실제 배포 (`npx vercel` 또는 대시보드에서 프로젝트 생성)
 - 실제 AI API 연동 (API 키 설정 후 Mock → Real 전환)
 - 프로덕션 DB/스토리지 연동 (PostgreSQL, GCS/S3)
 - 비동기 작업 큐 (BullMQ + Redis)

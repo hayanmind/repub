@@ -5,8 +5,15 @@ import Header from "@/components/layout/header";
 import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
-  title: "ePub 3.0 리마스터링 도구",
-  description: "AI 기반 ePub 2.0 → 3.0 인터랙티브 변환 시스템",
+  title: "ePub 리마스터링 | AI 기반 ePub 2.0 → 3.0 자동 변환",
+  description:
+    "ePub 2.0 전자책을 ePub 3.0 인터랙티브 콘텐츠로 자동 변환합니다. AI 퀴즈 생성, TTS 음성 변환, 접근성 자동 적용(KWCAG 2.1) 지원.",
+  keywords: ["ePub", "전자책", "ePub 3.0", "변환", "접근성", "KWCAG", "AI", "TTS", "퀴즈"],
+  openGraph: {
+    title: "ePub 리마스터링",
+    description: "AI 기반 ePub 2.0 → 3.0 인터랙티브 자동 변환 시스템",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

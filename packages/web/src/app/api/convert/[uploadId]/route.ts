@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { startConversion } from '@/lib/server/services';
+import { runConversion } from '@/lib/server/services';
+
+export const maxDuration = 60; // Allow up to 60s for ePub conversion
 
 export async function POST(
   request: NextRequest,
@@ -10,10 +12,10 @@ export async function POST(
   const options = body.options ?? {};
 
   try {
-    const job = startConversion(uploadId, options);
+    const job = await runConversion(uploadId, options);
     return NextResponse.json(
-      { jobId: job.jobId, status: 'processing' },
-      { status: 202 },
+      { jobId: job.jobId, status: job.status },
+      { status: job.status === 'completed' ? 200 : 202 },
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Upload not found';
