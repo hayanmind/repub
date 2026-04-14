@@ -7,6 +7,10 @@ AI 기반 ePub 2.0 → 3.0 인터랙티브 리마스터링 시스템
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![CI](https://github.com/hayanmind/epub-remastering-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/hayanmind/epub-remastering-tool/actions/workflows/ci.yml)
 
+> **📁 정부지원사업 내부 문서는 별도 리포에서 관리**
+> 사업계획서, 월간보고, 외주 용역 서류 등 기밀 문서는 [`hayanmind/gov-epub-2026`](https://github.com/hayanmind/gov-epub-2026) (Internal) 에서 관리됩니다.
+> 본 리포는 **소스코드 전용**이며 MIT 오픈소스로 공개됩니다.
+
 ## 소개
 
 구형 ePub 2.0 전자책을 최신 국제표준 **ePub 3.0 인터랙티브 콘텐츠**로 자동 변환하는 시스템입니다.
