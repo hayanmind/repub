@@ -3,6 +3,8 @@ import "./globals.css";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import { AuthProvider } from "@/lib/auth";
+import { ClerkProvider } from "@clerk/nextjs";
+import { koKR } from "@clerk/localizations";
 
 export const metadata: Metadata = {
   title: "ePub 리마스터링 | AI 기반 ePub 2.0 → 3.0 자동 변환",
@@ -45,17 +47,19 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased" style={{ background: 'var(--bg-base)' }}>
-        <AuthProvider>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-              <Header />
-              <main className="flex-1 p-6 overflow-auto">
-                {children}
-              </main>
+        <ClerkProvider localization={koKR}>
+          <AuthProvider>
+            <div className="flex min-h-screen">
+              <Sidebar />
+              <div className="flex-1 flex flex-col min-w-0">
+                <Header />
+                <main className="flex-1 p-6 overflow-auto">
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-        </AuthProvider>
+          </AuthProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

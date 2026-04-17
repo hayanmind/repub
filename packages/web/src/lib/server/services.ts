@@ -9,6 +9,9 @@ import type {
   ValidationReport as CoreValidationReport,
   ValidationIssue,
 } from '@gov-epub/core';
+import { put, del } from '@vercel/blob';
+import { eq, desc } from 'drizzle-orm';
+import { db, uploads as uploadsTable, jobs as jobsTable, conversionResults, userSettings } from './db';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -19,7 +22,7 @@ export interface UploadRecord {
   originalName: string;
   size: number;
   mimeType: string;
-  buffer: Buffer;
+  blobUrl: string;
   uploadedAt: string;
 }
 
@@ -73,68 +76,152 @@ export interface SampleMeta {
 }
 
 // ---------------------------------------------------------------------------
-// In-memory stores (persist during Vercel warm starts)
+// Helpers
 // ---------------------------------------------------------------------------
 
-const uploads = new Map<string, UploadRecord>();
-const jobs = new Map<string, ConversionJob>();
-const results = new Map<string, ConversionResult>();
-const settings: Record<string, string | undefined> = {};
+function hasDatabase(): boolean {
+  return !!process.env.DATABASE_URL;
+}
+
+function hasBlob(): boolean {
+  return !!process.env.BLOB_READ_WRITE_TOKEN;
+}
+
+// In-memory fallback (dev mode without DB/Blob)
+const memUploads = new Map<string, UploadRecord & { buffer: Buffer }>();
+const memJobs = new Map<string, ConversionJob>();
+const memResults = new Map<string, ConversionResult>();
+const memSettings: Record<string, string | undefined> = {};
 
 // ---------------------------------------------------------------------------
 // Upload Service
 // ---------------------------------------------------------------------------
 
-export function saveUpload(buffer: Buffer, originalName: string, mimeType: string): UploadRecord {
+export async function saveUpload(
+  buffer: Buffer,
+  originalName: string,
+  mimeType: string,
+  userId: string = 'anonymous',
+): Promise<UploadRecord> {
   const id = randomUUID();
-  const record: UploadRecord = {
-    id,
-    originalName,
-    size: buffer.length,
-    mimeType,
-    buffer,
-    uploadedAt: new Date().toISOString(),
-  };
-  uploads.set(id, record);
-  return record;
+  const now = new Date().toISOString();
+
+  if (hasBlob() && hasDatabase()) {
+    const blob = await put(`uploads/${id}/${originalName}`, buffer, {
+      access: 'public',
+      contentType: mimeType,
+    });
+
+    await db().insert(uploadsTable).values({
+      id,
+      userId,
+      originalName,
+      size: buffer.length,
+      mimeType,
+      blobUrl: blob.url,
+    });
+
+    return { id, originalName, size: buffer.length, mimeType, blobUrl: blob.url, uploadedAt: now };
+  }
+
+  // Fallback: in-memory
+  const record = { id, originalName, size: buffer.length, mimeType, blobUrl: '', uploadedAt: now, buffer };
+  memUploads.set(id, record);
+  return { id, originalName, size: buffer.length, mimeType, blobUrl: '', uploadedAt: now };
 }
 
-export function getUpload(id: string): UploadRecord | undefined {
-  return uploads.get(id);
+export async function getUpload(id: string): Promise<(UploadRecord & { buffer?: Buffer }) | undefined> {
+  if (hasDatabase()) {
+    const rows = await db().select().from(uploadsTable).where(eq(uploadsTable.id, id)).limit(1);
+    if (rows.length === 0) return undefined;
+    const row = rows[0]!;
+    const record: UploadRecord & { buffer?: Buffer } = {
+      id: row.id,
+      originalName: row.originalName,
+      size: row.size,
+      mimeType: row.mimeType,
+      blobUrl: row.blobUrl,
+      uploadedAt: row.createdAt.toISOString(),
+    };
+    // Fetch buffer from Blob
+    if (row.blobUrl) {
+      const res = await fetch(row.blobUrl);
+      record.buffer = Buffer.from(await res.arrayBuffer());
+    }
+    return record;
+  }
+
+  return memUploads.get(id);
 }
 
-export function listUploads(): UploadRecord[] {
-  return Array.from(uploads.values());
+export async function listUploads(userId?: string): Promise<UploadRecord[]> {
+  if (hasDatabase()) {
+    const query = userId
+      ? db().select().from(uploadsTable).where(eq(uploadsTable.userId, userId)).orderBy(desc(uploadsTable.createdAt))
+      : db().select().from(uploadsTable).orderBy(desc(uploadsTable.createdAt));
+    const rows = await query;
+    return rows.map((r) => ({
+      id: r.id,
+      originalName: r.originalName,
+      size: r.size,
+      mimeType: r.mimeType,
+      blobUrl: r.blobUrl,
+      uploadedAt: r.createdAt.toISOString(),
+    }));
+  }
+
+  return Array.from(memUploads.values()).map(({ buffer: _b, ...rest }) => rest);
 }
 
 // ---------------------------------------------------------------------------
-// Conversion Service — real Core Engine integration
+// Conversion Service
 // ---------------------------------------------------------------------------
 
-/**
- * Run actual ePub 2.0 → 3.0 conversion using @gov-epub/core.
- * Synchronous within the request — results are stored immediately.
- */
 export async function runConversion(
   uploadId: string,
   options: Record<string, boolean>,
+  userId: string = 'anonymous',
 ): Promise<ConversionJob> {
-  const upload = uploads.get(uploadId);
+  const upload = await getUpload(uploadId);
   if (!upload) throw new Error(`Upload not found: ${uploadId}`);
+
+  // Need buffer for conversion
+  let buffer: Buffer;
+  if (upload.buffer) {
+    buffer = upload.buffer;
+  } else if (upload.blobUrl) {
+    const res = await fetch(upload.blobUrl);
+    buffer = Buffer.from(await res.arrayBuffer());
+  } else {
+    throw new Error('Upload has no file data');
+  }
 
   const jobId = randomUUID();
   const now = new Date().toISOString();
+  const progress: JobProgress = { step: 1, totalSteps: 5, percent: 10, currentStage: 'parsing' };
 
   const job: ConversionJob = {
     jobId,
     uploadId,
     status: 'processing',
-    progress: { step: 1, totalSteps: 5, percent: 10, currentStage: 'parsing' },
+    progress,
     options,
     createdAt: now,
     updatedAt: now,
   };
-  jobs.set(jobId, job);
+
+  if (hasDatabase()) {
+    await db().insert(jobsTable).values({
+      id: jobId,
+      uploadId,
+      userId,
+      status: 'processing',
+      progress,
+      options,
+    });
+  } else {
+    memJobs.set(jobId, job);
+  }
 
   try {
     const convOptions: ConversionOptions = {
@@ -146,70 +233,144 @@ export async function runConversion(
       cssTheme: 'modern',
     };
 
-    // 1. Parse original for before/after preview comparison
-    const originalParsed = await parseEpub(upload.buffer);
+    const originalParsed = await parseEpub(buffer);
+    const coreResult = await processEpub(buffer, convOptions);
 
-    // 2. Run full pipeline: parse → convert → validate
-    const coreResult = await processEpub(upload.buffer, convOptions);
-
-    // 3. Parse converted output for preview
     let convertedParsed: ParsedEpub;
     try {
       convertedParsed = await parseEpub(coreResult.epub);
     } catch {
-      // If we can't parse the output, use original with a note
       convertedParsed = originalParsed;
     }
 
-    // 4. Build preview data
-    const previewData = buildPreviewData(
-      jobId,
-      upload,
-      originalParsed,
-      convertedParsed,
-      coreResult,
-    );
-
-    // 5. Build frontend-compatible report
+    const previewData = buildPreviewData(jobId, upload, originalParsed, convertedParsed, coreResult);
     const report = buildFrontendReport(coreResult.report, coreResult.stats);
 
-    // 6. Store results
-    results.set(jobId, {
-      epub: coreResult.epub,
-      report,
-      metadata: coreResult.metadata,
-      stats: coreResult.stats,
-      previewData,
-    });
+    const resultFilename = `converted-${upload.originalName}`;
+    const resultSize = coreResult.epub.length;
+
+    if (hasBlob() && hasDatabase()) {
+      const resultBlob = await put(`results/${jobId}/${resultFilename}`, coreResult.epub, {
+        access: 'public',
+        contentType: 'application/epub+zip',
+      });
+
+      await db().update(jobsTable).set({
+        status: 'completed',
+        progress: { step: 5, totalSteps: 5, percent: 100, currentStage: 'completed' },
+        resultFilename,
+        resultSize,
+        resultBlobUrl: resultBlob.url,
+        updatedAt: new Date(),
+      }).where(eq(jobsTable.id, jobId));
+
+      await db().insert(conversionResults).values({
+        id: randomUUID(),
+        jobId,
+        reportJson: report,
+        metadata: coreResult.metadata as unknown as Record<string, unknown>,
+        stats: coreResult.stats as unknown as Record<string, unknown>,
+        previewData: previewData as unknown as Record<string, unknown>,
+      });
+    } else {
+      memResults.set(jobId, {
+        epub: coreResult.epub,
+        report,
+        metadata: coreResult.metadata,
+        stats: coreResult.stats,
+        previewData,
+      });
+    }
 
     job.status = 'completed';
     job.progress = { step: 5, totalSteps: 5, percent: 100, currentStage: 'completed' };
-    job.result = {
-      filename: `converted-${upload.originalName}`,
-      size: coreResult.epub.length,
-    };
+    job.result = { filename: resultFilename, size: resultSize };
     job.updatedAt = new Date().toISOString();
+    if (!hasDatabase()) memJobs.set(jobId, job);
   } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : 'Conversion failed';
     job.status = 'failed';
-    job.error = err instanceof Error ? err.message : 'Conversion failed';
+    job.error = errorMsg;
     job.progress = { step: 0, totalSteps: 5, percent: 0, currentStage: 'failed' };
     job.updatedAt = new Date().toISOString();
+
+    if (hasDatabase()) {
+      await db().update(jobsTable).set({
+        status: 'failed',
+        error: errorMsg,
+        progress: { step: 0, totalSteps: 5, percent: 0, currentStage: 'failed' },
+        updatedAt: new Date(),
+      }).where(eq(jobsTable.id, jobId));
+    } else {
+      memJobs.set(jobId, job);
+    }
   }
 
   return job;
 }
 
-/** Get job status (no fake progress — real status from conversion). */
-export function getJob(jobId: string): ConversionJob | undefined {
-  return jobs.get(jobId);
+export async function getJob(jobId: string): Promise<ConversionJob | undefined> {
+  if (hasDatabase()) {
+    const rows = await db().select().from(jobsTable).where(eq(jobsTable.id, jobId)).limit(1);
+    if (rows.length === 0) return undefined;
+    return dbRowToJob(rows[0]!);
+  }
+  return memJobs.get(jobId);
 }
 
-export function listJobs(): ConversionJob[] {
-  return Array.from(jobs.values());
+export async function listJobs(userId?: string): Promise<ConversionJob[]> {
+  if (hasDatabase()) {
+    const query = userId
+      ? db().select().from(jobsTable).where(eq(jobsTable.userId, userId)).orderBy(desc(jobsTable.createdAt))
+      : db().select().from(jobsTable).orderBy(desc(jobsTable.createdAt));
+    const rows = await query;
+    return rows.map(dbRowToJob);
+  }
+  return Array.from(memJobs.values());
 }
 
-export function getResult(jobId: string): ConversionResult | undefined {
-  return results.get(jobId);
+export async function getResult(jobId: string): Promise<ConversionResult | undefined> {
+  if (hasDatabase()) {
+    // Get job for blob URL
+    const jobRows = await db().select().from(jobsTable).where(eq(jobsTable.id, jobId)).limit(1);
+    if (jobRows.length === 0) return undefined;
+    const jobRow = jobRows[0]!;
+
+    // Get result metadata
+    const resultRows = await db().select().from(conversionResults).where(eq(conversionResults.jobId, jobId)).limit(1);
+    const resultRow = resultRows[0];
+
+    // Fetch epub from Blob
+    let epub = Buffer.alloc(0);
+    if (jobRow.resultBlobUrl) {
+      const res = await fetch(jobRow.resultBlobUrl);
+      epub = Buffer.from(await res.arrayBuffer());
+    }
+
+    return {
+      epub,
+      report: resultRow?.reportJson,
+      metadata: resultRow?.metadata,
+      stats: resultRow?.stats,
+      previewData: resultRow?.previewData,
+    };
+  }
+
+  return memResults.get(jobId);
+}
+
+function dbRowToJob(row: typeof jobsTable.$inferSelect): ConversionJob {
+  return {
+    jobId: row.id,
+    uploadId: row.uploadId,
+    status: row.status as ConversionJob['status'],
+    progress: (row.progress as JobProgress) ?? { step: 0, totalSteps: 5, percent: 0, currentStage: 'queued' },
+    options: (row.options as Record<string, boolean>) ?? {},
+    result: row.resultFilename ? { filename: row.resultFilename, size: row.resultSize ?? 0 } : undefined,
+    error: row.error ?? undefined,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -272,7 +433,6 @@ function flattenMetadata(meta: object): Record<string, string> {
 }
 
 function generateBriefSummary(html: string, title: string): string {
-  // Extract plain text from HTML and create a brief summary
   const text = html
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
@@ -302,7 +462,6 @@ function buildFrontendReport(
     .filter((i: ValidationIssue) => i.severity === 'info')
     .map((i: ValidationIssue) => i.message);
 
-  // Default accessibility passed items if none reported
   const defaultPassed = [
     '이미지 대체 텍스트 (alt)',
     '문서 구조 태그 (h1-h6)',
@@ -367,7 +526,7 @@ function buildFrontendReport(
         passed: true,
       },
       '문서화 커버리지': {
-        value: 8,
+        value: 9,
         target: 3,
         unit: '건',
         passed: true,
@@ -382,7 +541,6 @@ function buildFrontendReport(
 
 let cachedSamples: SampleMeta[] | null = null;
 
-/** Resolve the samples directory. Works in both dev and Vercel. */
 function getSamplesDir(): string {
   return path.join(process.cwd(), '..', '..', 'fixtures', 'samples');
 }
@@ -414,38 +572,60 @@ export async function getSampleBuffer(filename: string): Promise<Buffer | null> 
 // Settings
 // ---------------------------------------------------------------------------
 
-function maskKey(key: string | undefined): string | null {
+function maskKey(key: string | undefined | null): string | null {
   if (!key) return null;
   if (key.length <= 4) return '****';
   return '*'.repeat(key.length - 4) + key.slice(-4);
 }
 
-export function getSettings() {
+export async function getSettings(userId?: string) {
+  if (hasDatabase() && userId) {
+    const rows = await db().select().from(userSettings).where(eq(userSettings.userId, userId)).limit(1);
+    const row = rows[0];
+    return {
+      geminiApiKey: maskKey(row?.geminiApiKey),
+      openaiApiKey: maskKey(row?.openaiApiKey),
+      anthropicApiKey: maskKey(row?.anthropicApiKey),
+      hasGeminiKey: !!row?.geminiApiKey,
+      hasOpenaiKey: !!row?.openaiApiKey,
+      hasAnthropicKey: !!row?.anthropicApiKey,
+    };
+  }
+
   return {
-    geminiApiKey: maskKey(settings.geminiApiKey),
-    openaiApiKey: maskKey(settings.openaiApiKey),
-    anthropicApiKey: maskKey(settings.anthropicApiKey),
-    hasGeminiKey: !!settings.geminiApiKey,
-    hasOpenaiKey: !!settings.openaiApiKey,
-    hasAnthropicKey: !!settings.anthropicApiKey,
+    geminiApiKey: maskKey(memSettings.geminiApiKey),
+    openaiApiKey: maskKey(memSettings.openaiApiKey),
+    anthropicApiKey: maskKey(memSettings.anthropicApiKey),
+    hasGeminiKey: !!memSettings.geminiApiKey,
+    hasOpenaiKey: !!memSettings.openaiApiKey,
+    hasAnthropicKey: !!memSettings.anthropicApiKey,
   };
 }
 
-export function updateSettings(body: Record<string, string>) {
-  if (typeof body.geminiApiKey === 'string') {
-    settings.geminiApiKey = body.geminiApiKey || undefined;
+export async function updateSettings(body: Record<string, string>, userId?: string) {
+  if (hasDatabase() && userId) {
+    const values: Record<string, string | Date> = { userId, updatedAt: new Date() };
+    if (typeof body.geminiApiKey === 'string') values.geminiApiKey = body.geminiApiKey;
+    if (typeof body.openaiApiKey === 'string') values.openaiApiKey = body.openaiApiKey;
+    if (typeof body.anthropicApiKey === 'string') values.anthropicApiKey = body.anthropicApiKey;
+
+    await db().insert(userSettings).values(values as typeof userSettings.$inferInsert)
+      .onConflictDoUpdate({
+        target: userSettings.userId,
+        set: values,
+      });
+
+    return getSettings(userId);
   }
-  if (typeof body.openaiApiKey === 'string') {
-    settings.openaiApiKey = body.openaiApiKey || undefined;
-  }
-  if (typeof body.anthropicApiKey === 'string') {
-    settings.anthropicApiKey = body.anthropicApiKey || undefined;
-  }
+
+  if (typeof body.geminiApiKey === 'string') memSettings.geminiApiKey = body.geminiApiKey || undefined;
+  if (typeof body.openaiApiKey === 'string') memSettings.openaiApiKey = body.openaiApiKey || undefined;
+  if (typeof body.anthropicApiKey === 'string') memSettings.anthropicApiKey = body.anthropicApiKey || undefined;
   return getSettings();
 }
 
 // ---------------------------------------------------------------------------
-// Auth (demo-mode only for serverless)
+// Auth
 // ---------------------------------------------------------------------------
 
 export interface AuthUser {

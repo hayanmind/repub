@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  const record = saveUpload(buffer, file.name, file.type || 'application/epub+zip');
+  const record = await saveUpload(buffer, file.name, file.type || 'application/epub+zip');
 
   return NextResponse.json(
     {

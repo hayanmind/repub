@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { listJobs } from '@/lib/server/services';
 
 export async function GET() {
-  const allJobs = listJobs();
+  const allJobs = await listJobs();
 
   const jobs = allJobs.map((job) => ({
     jobId: job.jobId,

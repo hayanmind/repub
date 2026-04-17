@@ -25,7 +25,7 @@ export async function POST(
     );
   }
 
-  const record = saveUpload(buffer, sample.filename, 'application/epub+zip');
+  const record = await saveUpload(buffer, sample.filename, 'application/epub+zip');
 
   return NextResponse.json(
     {
