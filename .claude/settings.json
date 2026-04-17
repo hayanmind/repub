@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git push:*)",
+            "command": "cd /Users/jmoh/Workspace/gov-epub-2026 && pnpm build > /dev/null 2>&1 && pnpm test > /dev/null 2>&1 && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"Build and tests passed.\"}}' || echo '{\"continue\":false,\"stopReason\":\"Build or tests failed. Fix before pushing.\"}'",
+            "timeout": 120,
+            "statusMessage": "Pre-push: build + test 검증 중..."
+          }
+        ]
+      }
+    ]
+  }
+}

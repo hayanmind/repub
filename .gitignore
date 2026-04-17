@@ -18,3 +18,5 @@ source/
 
 # Outsourcing documents (confidential)
 outsourcing/
+.vercel
+.env*.local
