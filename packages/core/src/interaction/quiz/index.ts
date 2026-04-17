@@ -43,8 +43,8 @@ async function generateRealQuiz(
   chapterId: string,
   config: AiConfig,
 ): Promise<GeneratedQuiz> {
-  const { default: OpenAI } = await import('openai');
-  const client = new OpenAI({ apiKey: config.openaiApiKey });
+  const { createLlmClient } = await import('../ai-config.js');
+  const { client, model } = await createLlmClient(config);
 
   const systemPrompt = `당신은 한국 정부 발간물 ePub 교육 콘텐츠 전문가입니다.
 주어진 텍스트를 분석하여 핵심 내용에 대한 객관식 퀴즈 문제를 생성하세요.
@@ -71,7 +71,7 @@ JSON 형식으로 응답하세요:
   const truncatedText = chapterText.slice(0, 6000);
 
   const response = await client.chat.completions.create({
-    model: 'gpt-4',
+    model,
     messages: [
       { role: 'system', content: systemPrompt },
       {

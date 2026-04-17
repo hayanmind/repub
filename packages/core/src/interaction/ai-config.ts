@@ -14,7 +14,8 @@ import type { AiConfig } from './types.js';
  * variables are set the config automatically falls back to mock mode.
  *
  * Recognised variables:
- * - OPENAI_API_KEY
+ * - GEMINI_API_KEY      (Google Gemini — preferred LLM provider)
+ * - OPENAI_API_KEY      (OpenAI — fallback LLM provider)
  * - ANTHROPIC_API_KEY
  * - ELEVENLABS_API_KEY
  * - STABILITY_API_KEY
@@ -23,6 +24,7 @@ import type { AiConfig } from './types.js';
 export function createAiConfig(
   env: Record<string, string | undefined> = process.env,
 ): AiConfig {
+  const geminiApiKey = env.GEMINI_API_KEY?.trim() || undefined;
   const openaiApiKey = env.OPENAI_API_KEY?.trim() || undefined;
   const anthropicApiKey = env.ANTHROPIC_API_KEY?.trim() || undefined;
   const elevenlabsApiKey = env.ELEVENLABS_API_KEY?.trim() || undefined;
@@ -32,6 +34,7 @@ export function createAiConfig(
     env.USE_MOCK === 'true' || env.USE_MOCK === '1';
 
   const hasAnyKey = !!(
+    geminiApiKey ||
     openaiApiKey ||
     anthropicApiKey ||
     elevenlabsApiKey ||
@@ -39,6 +42,7 @@ export function createAiConfig(
   );
 
   return {
+    geminiApiKey,
     openaiApiKey,
     anthropicApiKey,
     elevenlabsApiKey,
@@ -52,4 +56,31 @@ export function createAiConfig(
  */
 export function isMockMode(config: AiConfig): boolean {
   return config.useMock;
+}
+
+/**
+ * Create an OpenAI-compatible client configured for the best available LLM.
+ *
+ * Priority: Gemini (via OpenAI-compat endpoint) > OpenAI.
+ * Returns the client instance and the model name to use.
+ */
+export async function createLlmClient(
+  config: AiConfig,
+): Promise<{ client: InstanceType<typeof import('openai').default>; model: string }> {
+  const { default: OpenAI } = await import('openai');
+
+  if (config.geminiApiKey) {
+    return {
+      client: new OpenAI({
+        apiKey: config.geminiApiKey,
+        baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+      }),
+      model: 'gemini-2.0-flash',
+    };
+  }
+
+  return {
+    client: new OpenAI({ apiKey: config.openaiApiKey }),
+    model: 'gpt-4',
+  };
 }

@@ -27,7 +27,8 @@ interface ApiKeyField {
 }
 
 const API_KEYS: ApiKeyField[] = [
-  { key: 'openai', label: 'OpenAI API 키', placeholder: 'sk-...로 시작하는 키', description: 'GPT-4 기반 변환, 퀴즈 생성, 요약에 사용', icon: Cpu },
+  { key: 'gemini', label: 'Google Gemini API 키 (권장)', placeholder: 'AQ... 또는 AIza...로 시작하는 키', description: 'Gemini Flash 기반 변환, 퀴즈 생성, 요약에 사용 (가장 저렴)', icon: Cpu },
+  { key: 'openai', label: 'OpenAI API 키 (선택)', placeholder: 'sk-...로 시작하는 키', description: 'GPT-4 기반 변환 — Gemini 키가 없을 때 사용', icon: Cpu },
   { key: 'anthropic', label: 'Anthropic API 키 (선택)', placeholder: 'sk-ant-...로 시작하는 키', description: 'Claude 모델 접근에 사용', icon: Shield },
   { key: 'elevenlabs', label: 'ElevenLabs API 키 (선택)', placeholder: 'API 키 입력', description: 'TTS 음성 변환에 사용', icon: Volume2 },
   { key: 'stability', label: 'Stability AI 키 (선택)', placeholder: 'sk-...로 시작하는 키', description: '이미지 생성/향상에 사용', icon: Image },

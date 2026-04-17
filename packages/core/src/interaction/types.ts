@@ -10,6 +10,7 @@
 // ---------------------------------------------------------------------------
 
 export interface AiConfig {
+  geminiApiKey?: string;
   openaiApiKey?: string;
   anthropicApiKey?: string;
   elevenlabsApiKey?: string;

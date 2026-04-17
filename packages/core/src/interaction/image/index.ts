@@ -38,8 +38,8 @@ async function suggestRealImages(
   chapterText: string,
   config: AiConfig,
 ): Promise<ImageSuggestion[]> {
-  const { default: OpenAI } = await import('openai');
-  const client = new OpenAI({ apiKey: config.openaiApiKey });
+  const { createLlmClient } = await import('../ai-config.js');
+  const { client, model } = await createLlmClient(config);
 
   const systemPrompt = `당신은 한국 정부 발간물의 시각 자료 전문가입니다.
 주어진 텍스트를 분석하여 적절한 이미지 삽입 위치와 이미지 설명을 제안하세요.
@@ -64,7 +64,7 @@ JSON 형식으로 응답하세요:
   const truncated = chapterText.slice(0, 5000);
 
   const response = await client.chat.completions.create({
-    model: 'gpt-4',
+    model,
     messages: [
       { role: 'system', content: systemPrompt },
       {

@@ -23,7 +23,7 @@ import { suggestImages } from './image/index.js';
 import { createTutorScript } from './tutor/index.js';
 
 // Re-export public API of sub-modules
-export { createAiConfig, isMockMode } from './ai-config.js';
+export { createAiConfig, isMockMode, createLlmClient } from './ai-config.js';
 export { generateQuiz } from './quiz/index.js';
 export { generateTts, generateMediaOverlay } from './tts/index.js';
 export { suggestImages } from './image/index.js';
@@ -169,13 +169,13 @@ async function generateRealSummary(
   chapter: { id: string; title: string; content: string },
   config: AiConfig,
 ): Promise<Summary> {
-  const { default: OpenAI } = await import('openai');
-  const client = new OpenAI({ apiKey: config.openaiApiKey });
+  const { createLlmClient } = await import('./ai-config.js');
+  const { client, model } = await createLlmClient(config);
 
   const plainText = stripHtml(chapter.content).slice(0, 6000);
 
   const response = await client.chat.completions.create({
-    model: 'gpt-4',
+    model,
     messages: [
       {
         role: 'system',

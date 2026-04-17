@@ -60,14 +60,14 @@ function createRealTutorScript(
     chatHistory.push({ role: 'user', content: userMsg });
     setLoading(true);
 
-    fetch('https://api.openai.com/v1/chat/completions', {
+    fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + (window.__EPUB_AI_KEY || API_KEY)
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gemini-2.0-flash',
         messages: [
           {
             role: 'system',

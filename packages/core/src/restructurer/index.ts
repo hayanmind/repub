@@ -55,8 +55,8 @@ async function restructureReal(
   chapter: RestructureInput,
   config: AiConfig,
 ): Promise<RestructureResult> {
-  const { default: OpenAI } = await import('openai');
-  const client = new OpenAI({ apiKey: config.openaiApiKey });
+  const { createLlmClient } = await import('../interaction/ai-config.js');
+  const { client, model } = await createLlmClient(config);
 
   // First pass: rule-based cleanup
   let html = applyRuleBasedCleanup(chapter.content);
@@ -65,7 +65,7 @@ async function restructureReal(
   const truncated = html.slice(0, 8000);
 
   const response = await client.chat.completions.create({
-    model: 'gpt-4',
+    model,
     messages: [
       {
         role: 'system',

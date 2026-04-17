@@ -422,14 +422,19 @@ function maskKey(key: string | undefined): string | null {
 
 export function getSettings() {
   return {
+    geminiApiKey: maskKey(settings.geminiApiKey),
     openaiApiKey: maskKey(settings.openaiApiKey),
     anthropicApiKey: maskKey(settings.anthropicApiKey),
+    hasGeminiKey: !!settings.geminiApiKey,
     hasOpenaiKey: !!settings.openaiApiKey,
     hasAnthropicKey: !!settings.anthropicApiKey,
   };
 }
 
 export function updateSettings(body: Record<string, string>) {
+  if (typeof body.geminiApiKey === 'string') {
+    settings.geminiApiKey = body.geminiApiKey || undefined;
+  }
   if (typeof body.openaiApiKey === 'string') {
     settings.openaiApiKey = body.openaiApiKey || undefined;
   }
