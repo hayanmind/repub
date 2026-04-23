@@ -338,6 +338,15 @@ gov-epub-2026/
 - **품질 등급화**: 정상/인코딩 오류/비표준 태그/파일 손상 분류
 - **출판사별 convention 분석**: HTML, CSS, XML 구조 패턴 정리
 
+**현재 확보된 공개 도메인 데이터셋** (2026-04-18 구축, 파서 스트레스 테스트용)
+- 총 1,010권 / 265.5 MB / SQLite 인덱싱
+- 문학(EN fiction) 500 + 비문학(EN, 9개 토픽 혼합) 500 + 한국어 10
+- 소스: Project Gutenberg (1,001) + Wikisource 한국어 (9)
+- 모두 ePub 2.0 (noimages) — error tolerance 테스트에 최적
+- 저장소: `fixtures/dataset-1000/` (gitignored)
+- 카탈로그 DB: `fixtures/dataset-1000/catalog.db`
+- 재구축 스크립트: `scripts/dataset/` (README 참조)
+
 ---
 
 ## 7. GitHub 오픈소스 공개 전략
@@ -567,19 +576,22 @@ gov-epub-2026/
 
 > 이 섹션은 실제 개발 과정에서 축적된 실전 지식이다. 새 세션에서 빠르게 맥락을 잡는 데 활용한다.
 
-### 12.1 현재 구현 상태 (2026-04-05 기준)
+### 12.1 현재 구현 상태 (2026-04-18 기준)
 
 | 영역 | 상태 | 비고 |
 |------|------|------|
-| Core 엔진 (파서/변환/접근성/검증) | ✅ 완성 | 60 tests 전체 통과 |
-| AI 인터랙션 (퀴즈/TTS/이미지/튜터) | ✅ 완성 | Mock + Real 모드 |
+| Core 엔진 (파서/변환/접근성/검증) | ✅ 완성 | 60 tests 전체 통과, `interactionCount` 실집계 반영 |
+| AI 인터랙션 (퀴즈/TTS/이미지/튜터) | ✅ 완성 | Mock + Real 모드, 변환 파이프라인 직접 주입 |
 | Web UI (7 페이지 + 15 API Routes) | ✅ 완성 | Next.js 16 App Router, Core 엔진 실제 연동 |
 | API 서버 (Express, 16 엔드포인트) | ✅ 완성 | 로컬 개발용 |
 | 문서 (9건) | ✅ 완성 | README, ARCHITECTURE, API, DEPLOY, FAQ, CONTRIBUTING, SIGIL, FINAL_REPORT, TEST_CERTIFICATE |
 | GitHub Actions CI/CD | ✅ 완성 | 빌드 + 테스트 + 타입체크 |
 | Docker / Docker Compose | ✅ 완성 | dev/production 멀티스테이지 |
 | Vercel 배포 설정 | ✅ 완성 | maxDuration, 보안 헤더 설정 완료 |
-| KPI 검증 스크립트 | ✅ 완성 | scripts/validate-kpi.ts, 7종 ePub 변환 검증 |
+| KPI 검증 스크립트 | ✅ 완성 | `scripts/validate-kpi.ts` (8 KPI) + `scripts/validate-kpi-extended.ts` (#2/#4/#5 정밀) |
+| ePub 1,010권 데이터셋 | ✅ 완성 | `fixtures/dataset-1000/` (265.5 MB), SQLite 카탈로그, Gutenberg+Wikisource |
+| 외주: 이비티솔루션 결과물 | ✅ 완료 | 결과보고서/납품서/검수조서 (MD+HTML+PDF) |
+| 외주: 플락 결과물 | ✅ 완료 | 결과보고서/납품서/검수조서 + 카드뉴스 20세트 + 영상 2편 스크립트 |
 | 프로덕션 DB (PostgreSQL) | ❌ 미구현 | 현재 인메모리 (Map) |
 | 작업 큐 (Redis/BullMQ) | ❌ 미구현 | 시간 기반 progress 시뮬레이션 |
 | 클라우드 스토리지 (GCS/S3) | ❌ 미구현 | 로컬 파일시스템 |
