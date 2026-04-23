@@ -517,11 +517,23 @@ async function validateAccessibility(
 }
 
 // ---------------------------------------------------------------------------
-// 4. Interaction count
+// 4. Interaction count (types, not instances)
 // ---------------------------------------------------------------------------
 
+/**
+ * Count the number of *distinct kinds* of interactive elements present in the
+ * converted ePub.  KPI #7 targets ≥ 3 types per book.
+ *
+ * Recognised types:
+ *   - summary     ("ai-summary" aside)
+ *   - quiz        ("ai-quiz" / epub:type="practice")
+ *   - tts         (<audio> element or *.smil media overlay)
+ *   - term-popup  (footnote / noteref / data-tooltip)
+ *   - tutor       (AI tutor widget)
+ *   - image       (AI-generated image or decorative figure)
+ */
 async function countInteractions(zip: JSZip): Promise<number> {
-  let count = 0;
+  const types = new Set<string>();
 
   const htmlFiles = Object.keys(zip.files).filter(
     (name) => /\.(x?html?)$/i.test(name) && !zip.files[name].dir,
@@ -530,35 +542,47 @@ async function countInteractions(zip: JSZip): Promise<number> {
   for (const path of htmlFiles) {
     const content = await zip.file(path)!.async('string');
 
-    // Count quiz sections
-    if (content.includes('ai-quiz') || content.includes('epub:type="practice"')) {
-      count++;
+    if (content.includes('ai-summary')) {
+      types.add('summary');
     }
 
-    // Count audio/media overlays
-    if (content.includes('<audio') || content.includes('media-overlay')) {
-      count++;
+    if (
+      content.includes('ai-quiz') ||
+      content.includes('epub:type="practice"')
+    ) {
+      types.add('quiz');
     }
 
-    // Count interactive elements (popups, tooltips, etc.)
+    if (
+      /<audio\b/i.test(content) ||
+      content.includes('data-media-overlay') ||
+      content.includes('media-overlay')
+    ) {
+      types.add('tts');
+    }
+
     if (
       content.includes('epub:type="noteref"') ||
-      content.includes('data-tooltip') ||
-      content.includes('epub:type="footnote"')
+      content.includes('epub:type="footnote"') ||
+      content.includes('data-tooltip')
     ) {
-      count++;
+      types.add('term-popup');
+    }
+
+    if (content.includes('ai-tutor') || content.includes('data-ai-tutor')) {
+      types.add('tutor');
     }
   }
 
-  // Check for SMIL files
+  // SMIL file on disk also counts as a TTS / media-overlay interaction.
   const smilFiles = Object.keys(zip.files).filter(
     (name) => /\.smil$/i.test(name),
   );
   if (smilFiles.length > 0) {
-    count++;
+    types.add('tts');
   }
 
-  return count;
+  return types.size;
 }
 
 // ---------------------------------------------------------------------------
