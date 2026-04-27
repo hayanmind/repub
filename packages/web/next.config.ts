@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   ...(isStaticExport
     ? {
         output: 'export',
-        basePath: '/epub-remastering-tool',
+        basePath: '/repub',
         images: { unoptimized: true },
       }
     : {

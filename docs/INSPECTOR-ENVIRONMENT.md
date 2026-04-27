@@ -126,8 +126,8 @@ curl -sI https://gov-epub-2026-three.vercel.app | head -1       # HTTP/2 200 확
 
 ```bash
 cd ~/inspection
-git clone https://github.com/hayanmind/epub-remastering-tool.git gov-epub-2026
-cd gov-epub-2026
+git clone https://github.com/hayanmind/repub.git
+cd repub
 git checkout main
 git log -1 --oneline   # 최신 커밋 SHA 확인 후 시험기관 보고용 기록
 ```

@@ -1,7 +1,7 @@
 {
-  "name": "gov-epub-2026",
+  "name": "repub",
   "private": true,
-  "description": "AI 기반 ePub 2.0 → 3.0 인터랙티브 리마스터링 시스템",
+  "description": "RePub — AI 기반 ePub 2.0 → 3.0 인터랙티브 리마스터링 시스템",
   "scripts": {
     "dev": "pnpm --filter @gov-epub/web dev",
     "dev:api": "pnpm --filter @gov-epub/api dev",

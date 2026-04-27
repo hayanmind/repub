@@ -9,12 +9,12 @@
 
 | 리포 | 권한 | 용도 |
 |------|------|------|
-| **[`hayanmind/epub-remastering-tool`](https://github.com/hayanmind/epub-remastering-tool)** (이 리포) | Internal (MIT 오픈소스화 예정) | 소스코드, 기술 문서 (README, API, docs/) |
+| **[`hayanmind/repub`](https://github.com/hayanmind/repub)** (이 리포) | Internal (MIT 오픈소스화 예정) | 소스코드, 기술 문서 (README, API, docs/) |
 | **[`hayanmind/gov-epub-2026`](https://github.com/hayanmind/gov-epub-2026)** | Internal (기밀) | 사업계획서, 월간보고, 컨설팅 일지, 중간평가, 외주 용역 서류 |
 
 **로컬 경로**:
-- 소스코드: `/Users/jmoh/Workspace/gov-epub-2026/` (이 디렉토리)
-- 내부 문서: `/Users/jmoh/Workspace/gov-epub-2026-docs/`
+- 소스코드: `/Users/jmoh/Workspace/gov-epub-2026-docs/repub/` (이 디렉토리, docs repo의 submodule)
+- 내부 문서: `/Users/jmoh/Workspace/gov-epub-2026-docs/` (상위)
 
 **`source/`와 `outsourcing/`는 이 리포의 `.gitignore`에 등록되어 있습니다.** 내부 문서를 수정할 때는 `gov-epub-2026-docs` 리포를 사용하세요.
 

@@ -467,8 +467,8 @@ gov-epub-2026/
 **방법 1: 직접 실행**
 ```bash
 # 1. 저장소 클론 및 의존성 설치
-git clone git@github.com:hayanmind/epub-remastering-tool.git
-cd epub-remastering-tool
+git clone git@github.com:hayanmind/repub.git
+cd repub
 pnpm install
 
 # 2. (선택) API 키 설정 -- 없으면 Mock 모드
@@ -483,8 +483,8 @@ pnpm dev            # http://localhost:3000
 
 **방법 2: Docker Compose**
 ```bash
-git clone git@github.com:hayanmind/epub-remastering-tool.git
-cd epub-remastering-tool
+git clone git@github.com:hayanmind/repub.git
+cd repub
 docker compose up    # 포트 3000 (웹), 3001 (API) 자동 매핑
 ```
 

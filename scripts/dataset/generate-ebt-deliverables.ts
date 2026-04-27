@@ -1739,7 +1739,7 @@ print(((merged['P1_인코딩_혼재_및_깨짐'] == 1) &
 본 데이터셋은 \`scripts/dataset/generate-ebt-deliverables.ts\`를 통해 결정적으로 재생성 가능하다:
 
 \`\`\`bash
-# epub-remastering-tool 리포에서
+# repub 리포에서
 npx tsx scripts/dataset/generate-ebt-deliverables.ts
 \`\`\`
 

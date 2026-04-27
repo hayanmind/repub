@@ -273,7 +273,7 @@ export default function Dashboard() {
           {/* CTA */}
           <div className="flex gap-2.5 mt-4 pt-4 border-t border-gray-100">
             <a
-              href="https://github.com/hayanmind/epub-remastering-tool/tree/main/packages/sigil-plugin"
+              href="https://github.com/hayanmind/repub/tree/main/packages/sigil-plugin"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"

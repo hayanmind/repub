@@ -5,7 +5,7 @@ AI 기반 ePub 2.0 → 3.0 인터랙티브 리마스터링 시스템
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org)
 [![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9-orange)](https://pnpm.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![CI](https://github.com/hayanmind/epub-remastering-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/hayanmind/epub-remastering-tool/actions/workflows/ci.yml)
+[![CI](https://github.com/hayanmind/repub/actions/workflows/ci.yml/badge.svg)](https://github.com/hayanmind/repub/actions/workflows/ci.yml)
 
 > **📁 정부지원사업 내부 문서는 별도 리포에서 관리**
 > 사업계획서, 월간보고, 외주 용역 서류 등 기밀 문서는 [`hayanmind/gov-epub-2026`](https://github.com/hayanmind/gov-epub-2026) (Internal) 에서 관리됩니다.
@@ -41,8 +41,8 @@ AI 기반 ePub 2.0 → 3.0 인터랙티브 리마스터링 시스템
 
 ```bash
 # 클론 및 의존성 설치
-git clone git@github.com:hayanmind/epub-remastering-tool.git
-cd epub-remastering-tool
+git clone git@github.com:hayanmind/repub.git
+cd repub
 pnpm install
 
 # (선택) API 키 설정 — 없으면 Mock 모드

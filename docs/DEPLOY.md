@@ -3,14 +3,14 @@
 ## 사전 요구사항
 
 - [Vercel](https://vercel.com) 계정
-- GitHub 리포지토리 연결: `git@github.com:hayanmind/epub-remastering-tool.git`
+- GitHub 리포지토리 연결: `git@github.com:hayanmind/repub.git`
 
 ## 배포 설정
 
 ### 1. Vercel 프로젝트 생성
 
 1. Vercel 대시보드에서 "New Project" 클릭
-2. GitHub 리포지토리 `hayanmind/epub-remastering-tool` 선택
+2. GitHub 리포지토리 `hayanmind/repub` 선택
 3. 설정:
    - **Framework Preset**: Next.js
    - **Root Directory**: `packages/web`

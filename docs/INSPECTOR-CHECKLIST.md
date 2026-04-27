@@ -165,7 +165,7 @@ cat inspection-results/{timestamp}/kpi-report-extended.json | jq '.kpis'
 | #9 시스템 가용률 | 프로덕션 URL 접속 기록 | 브라우저 HTTP 200 응답 |
 | #10 자동 TC 통과율 | `vitest.log` | Vitest 요약 라인 |
 | #11 변환 후 구조 오류율 | `epubcheck-report.json` | JSON |
-| #12 GitHub Actions 통과율 | https://github.com/hayanmind/epub-remastering-tool/actions | 브라우저 화면 |
+| #12 GitHub Actions 통과율 | https://github.com/hayanmind/repub/actions | 브라우저 화면 |
 | #13 문서화 커버리지 | `docs/` 파일 수 (`ls docs/*.md \| wc -l`) | 터미널 출력 |
 
 ### 5.3 스크린샷 파일명 규칙
@@ -198,7 +198,7 @@ grep -E "(Tests|passed|failed)" inspection-results/{timestamp}/vitest.log | tail
 ## 7. GitHub Actions CI 확인 (선택)
 
 ```
-https://github.com/hayanmind/epub-remastering-tool/actions
+https://github.com/hayanmind/repub/actions
 ```
 
 | # | 확인 항목 | 기준 | 확인 |
