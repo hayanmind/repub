@@ -1,42 +1,24 @@
 node_modules/
-.claude/
 dist/
 .next/
 .env
 .env.local
+.env*.local
 *.log
 .DS_Store
 coverage/
 .turbo/
 tmp/
-uploads/
+.claude/
 
-# Generated reports
-kpi-report.json
-kpi-report-extended.json
-kpi-report-dataset.json
-rebrand-report.json
-scripts/plock/rebrand-report.json
-scripts/plock/cardnews.json.bak.*
-scripts/plock/video-scripts.ts.bak.*
-scripts/plock/assets/
-scripts/plock/cardnews.json
+# Build outputs
+.vercel/
+out/
 
-# Inspection script outputs (검수 결과물)
-inspection-results/
-inspection-*.zip
-scripts/reports/
-
-# Dataset (1,010 ePubs — too large for git)
+# Sample dataset (large files — distributed separately)
 fixtures/dataset-1000/
 
-# Source documents (private/confidential)
+# Defensive: never commit private docs (in case anyone copies these folders here)
 source/
-
-# Outsourcing documents (confidential)
 outsourcing/
-.vercel
-.env*.local
-
-# 직인·서명 이미지 (민감 정보)
 /seals/

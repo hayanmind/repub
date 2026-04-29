@@ -1,32 +1,28 @@
 {
   "name": "repub",
   "private": true,
-  "description": "RePub — AI 기반 ePub 2.0 → 3.0 인터랙티브 리마스터링 시스템",
+  "description": "RePub — AI 기반 ePub 2.0 → 3.0 인터랙티브 리마스터링 오픈소스 라이브러리",
+  "license": "MIT",
+  "homepage": "https://github.com/hayanmind/repub",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hayanmind/repub.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hayanmind/repub/issues"
+  },
   "scripts": {
-    "dev": "pnpm --filter @gov-epub/web dev",
-    "dev:api": "pnpm --filter @gov-epub/api dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
-    "clean": "pnpm -r clean",
-    "validate:kpi": "tsx scripts/validate-kpi.ts"
+    "clean": "pnpm -r clean"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "devDependencies": {
-    "@daisy/ace": "^1.4.5",
-    "@types/better-sqlite3": "^7.6.13",
-    "better-sqlite3": "^12.9.0",
-    "csv-parse": "^6.2.1",
-    "docx": "^9.6.1",
     "epubchecker": "^5.2.1",
     "jszip": "^3.10.1",
-    "marked": "^18.0.1",
-    "next": "16.1.6",
-    "puppeteer": "^24.40.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
     "tsx": "^4.21.0"
   }
 }

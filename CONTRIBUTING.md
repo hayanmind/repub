@@ -7,7 +7,7 @@
 ```
 repub/
 ├── packages/
-│   ├── core/           # 핵심 변환 엔진 (독립 라이브러리)
+│   ├── core/           # 핵심 변환 엔진 + CLI (epub-remaster)
 │   │   └── src/
 │   │       ├── parser/         # [Stage 1] ePub 2.0 파싱
 │   │       ├── restructurer/   # [Stage 2] AI 기반 재구성
@@ -15,21 +15,15 @@ repub/
 │   │       ├── converter/      # [Stage 4] ePub 3.0 변환/패키징
 │   │       ├── accessibility/  # [Stage 4.5] 접근성 자동 적용
 │   │       ├── validator/      # [Stage 5] ePubCheck 연동
+│   │       ├── cli.ts          # epub-remaster CLI 진입점
 │   │       └── __tests__/      # 테스트 (5 Suites, 60 Tests)
-│   ├── api/            # REST API 서버 (Express, 포트 3001)
-│   │   └── src/
-│   │       ├── routes/         # REST 엔드포인트 (16개)
-│   │       ├── services/       # 비즈니스 로직
-│   │       └── middleware/     # 인증, 에러 핸들링
-│   └── web/            # 웹 대시보드 (Next.js, 포트 3000)
-│       └── src/
-│           ├── app/            # App Router 페이지 (7개)
-│           ├── components/     # 공용 UI 컴포넌트
-│           └── lib/api.ts      # API 클라이언트
-├── fixtures/           # 테스트용 ePub 샘플 (3종)
-│   └── samples/        # 공개 도메인 샘플 (4종)
-├── docs/               # 기술 문서 (6건)
+│   └── sigil-plugin/   # Sigil 편집기 Python 플러그인 (ePubRemaster)
+├── fixtures/           # 테스트용 ePub 샘플 (3종 자체 + 4종 공개 도메인)
+│   └── samples/        # 공개 도메인 샘플
+├── docs/               # 기술 문서 (5건: README/API/ARCHITECTURE/FAQ/SIGIL-INTEGRATION)
 └── CONTRIBUTING.md     # 이 문서
+
+> 참고: 본 라이브러리를 활용한 SaaS 서비스(Next.js + Clerk + Neon + Vercel Blob)는 별도 비공개 저장소(`hayanmind/repub-app`)에서 관리됩니다.
 ```
 
 ---
