@@ -88,7 +88,7 @@ console.log(`검증 통과: ${result.report.epubcheck.passed}`);
 ## 프로젝트 구조
 
 ```
-gov-epub-2026/
+repub/
 ├── packages/
 │   ├── core/           # 핵심 변환 엔진 (독립 라이브러리)
 │   │   └── src/

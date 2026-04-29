@@ -186,9 +186,8 @@ Infra:     GCP (Cloud Run/GKE), GitHub Actions (CI/CD)
 ### 3.3 모듈 구조
 
 ```
-gov-epub-2026/
+repub/
 ├── CLAUDE.md                    # 이 문서
-├── source/                      # 사업 근거 문서 (원본 보존)
 ├── packages/
 │   ├── web/                     # Next.js 프론트엔드 (대시보드)
 │   │   ├── app/                 # App Router 페이지

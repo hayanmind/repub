@@ -16,7 +16,7 @@ import { openDb, DATASET_DIR, type BookRow } from './schema.js';
 
 const CONCURRENCY = 4;
 const USER_AGENT =
-  'gov-epub-2026-research/1.0 (Korean Publishing Industry Promotion Agency; contact: jmoh@hayanmind.com)';
+  'repub-research/1.0 (Korean Publishing Industry Promotion Agency; contact: jmoh@hayanmind.com)';
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
 

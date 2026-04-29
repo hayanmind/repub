@@ -1,24 +1,25 @@
 /**
  * EBT 외주 최종 결과물 빌드 (업로드 전용 PDF).
  *
- * 원본 MD (편집용, 소스 리포):
- *   /Users/jmoh/Workspace/gov-epub-2026/outsourcing/ebt-solution/결과물/
+ * 모든 입력·출력은 docs repo(`gov-epub-2026-docs`)를 단일 진실 공급원으로 사용한다.
+ * (이전에는 source MD가 별도 repo에 있었으나 submodule 통합 후 docs로 일원화됨.)
+ *
+ * 원본 MD (편집용):
+ *   /Users/jmoh/Workspace/gov-epub-2026-docs/outsourcing/ebt-solution/결과물/
  *     - 연구용역_결과보고서.md
  *     - 납품서.md
  *     - 검수조서.md
  *
- * 날인·서명 이미지 (소스 리포, .gitignore 처리):
- *   /Users/jmoh/Workspace/gov-epub-2026/seals/
+ * 날인·서명 이미지 (docs 리포의 .gitignore에 등록되어 외부 노출 금지):
+ *   /Users/jmoh/Workspace/gov-epub-2026-docs/seals/
  *     - signature_kim_daehoon.png
  *     - seal_ebt_solution.png
  *     - seal_hayanmind.png
  *
- * 업로드 결과물 (docs 리포):
- *   /Users/jmoh/Workspace/gov-epub-2026-docs/outsourcing/ebt-solution/결과물/
+ * 업로드 결과물 PDF (입력과 같은 위치에 출력):
  *     - 연구용역_결과보고서.pdf  (맑은 고딕, EBT 직인)
  *     - 납품서.pdf                (맑은 고딕, EBT+하얀마인드 직인)
  *     - 검수조서.pdf              (맑은 고딕, 김대훈 서명 + 양사 직인)
- *     - 데이터셋_및_소스코드/     (기존 유지)
  *
  * Usage:
  *   npx tsx scripts/build-ebt-deliverables.ts
@@ -29,9 +30,10 @@ import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-const SOURCE = '/Users/jmoh/Workspace/gov-epub-2026/outsourcing/ebt-solution/결과물';
-const SEALS = '/Users/jmoh/Workspace/gov-epub-2026/seals';
-const OUT = '/Users/jmoh/Workspace/gov-epub-2026-docs/outsourcing/ebt-solution/결과물';
+const DOCS_ROOT = '/Users/jmoh/Workspace/gov-epub-2026-docs';
+const SOURCE = `${DOCS_ROOT}/outsourcing/ebt-solution/결과물`;
+const SEALS = `${DOCS_ROOT}/seals`;
+const OUT = SOURCE;
 
 const FILES = ['README.md', '연구용역_결과보고서.md', '납품서.md', '검수조서.md'];
 

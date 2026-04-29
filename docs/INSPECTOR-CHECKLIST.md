@@ -14,7 +14,7 @@
 
 | # | 항목 | 확인 |
 |---|------|------|
-| 1 | 로그인한 시험 머신이 `~/inspection/gov-epub-2026/` 경로에 위치 | ☐ |
+| 1 | 로그인한 시험 머신이 `~/inspection/repub/` 경로에 위치 | ☐ |
 | 2 | `docs/TEST_CERTIFICATE.md` (자체 시험성적서)를 먼저 열람 완료 | ☐ |
 | 3 | 인터넷 연결 정상 (`ping github.com` 또는 `curl -sI https://gov-epub-2026-three.vercel.app` 확인) | ☐ |
 
@@ -25,7 +25,7 @@
 ### 1.1 `inspect-run.sh` 실행
 
 ```bash
-cd ~/inspection/gov-epub-2026
+cd ~/inspection/repub
 bash scripts/inspect-run.sh
 ```
 
@@ -104,7 +104,7 @@ ls -la inspection-*.zip
 
 ```bash
 # 예시: 운수 좋은 날 변환 결과 재검증
-cd ~/inspection/gov-epub-2026
+cd ~/inspection/repub
 ls inspection-results/{timestamp}/converted/
 npx epubchecker inspection-results/{timestamp}/converted/lucky-day-converted.epub
 ```
@@ -122,7 +122,7 @@ npx epubchecker inspection-results/{timestamp}/converted/lucky-day-converted.epu
 ## 4. Ace by DAISY 수동 재실행 절차
 
 ```bash
-cd ~/inspection/gov-epub-2026
+cd ~/inspection/repub
 npx ace inspection-results/{timestamp}/converted/lucky-day-converted.epub -o /tmp/ace-report/
 open /tmp/ace-report/report.html   # macOS
 # xdg-open /tmp/ace-report/report.html   # Linux
@@ -145,7 +145,7 @@ open /tmp/ace-report/report.html   # macOS
 ### 5.1 확인 방법
 
 ```bash
-cd ~/inspection/gov-epub-2026
+cd ~/inspection/repub
 cat inspection-results/{timestamp}/kpi-report.json | jq '.kpis'
 cat inspection-results/{timestamp}/kpi-report-extended.json | jq '.kpis'
 ```
@@ -182,7 +182,7 @@ screenshot-kpi-{번호}-{YYYYMMDD}-{HHMM}.png
 ## 6. Vitest 결과 재확인
 
 ```bash
-cd ~/inspection/gov-epub-2026
+cd ~/inspection/repub
 grep -E "(Tests|passed|failed)" inspection-results/{timestamp}/vitest.log | tail -20
 ```
 

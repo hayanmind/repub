@@ -5,7 +5,7 @@
 ## 프로젝트 구조 이해
 
 ```
-gov-epub-2026/
+repub/
 ├── packages/
 │   ├── core/           # 핵심 변환 엔진 (독립 라이브러리)
 │   │   └── src/
@@ -46,8 +46,8 @@ gov-epub-2026/
 
 ```bash
 # 1. 저장소 클론
-git clone <repo-url>
-cd gov-epub-2026
+git clone https://github.com/hayanmind/repub.git
+cd repub
 
 # 2. 의존성 설치 (모든 패키지 한 번에 설치)
 pnpm install
