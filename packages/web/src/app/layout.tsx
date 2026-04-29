@@ -7,13 +7,13 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { koKR } from "@clerk/localizations";
 
 export const metadata: Metadata = {
-  title: "ePub 리마스터링 | AI 기반 ePub 2.0 → 3.0 자동 변환",
+  title: "RePub — AI 기반 ePub 2.0 → 3.0 인터랙티브 리마스터링",
   description:
-    "ePub 2.0 전자책을 ePub 3.0 인터랙티브 콘텐츠로 자동 변환합니다. AI 퀴즈 생성, TTS 음성 변환, 접근성 자동 적용(KWCAG 2.1) 지원.",
-  keywords: ["ePub", "전자책", "ePub 3.0", "변환", "접근성", "KWCAG", "AI", "TTS", "퀴즈"],
+    "RePub: 낡은 ePub 2.0 전자책에 AI로 다시 숨을 불어넣습니다. 자동 구조 분석, 퀴즈·TTS·이미지 생성, 접근성 자동 적용(KWCAG 2.1) 지원.",
+  keywords: ["RePub", "ePub", "전자책", "ePub 3.0", "리마스터링", "접근성", "KWCAG", "AI", "TTS", "퀴즈"],
   openGraph: {
-    title: "ePub 리마스터링",
-    description: "AI 기반 ePub 2.0 → 3.0 인터랙티브 자동 변환 시스템",
+    title: "RePub",
+    description: "Re-imagined ePub. AI가 다시 짓는 전자책.",
     type: "website",
   },
 };
