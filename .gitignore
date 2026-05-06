@@ -22,3 +22,6 @@ fixtures/dataset-1000/
 source/
 outsourcing/
 /seals/
+
+# Clerk keyless mode artifacts
+.clerk/
